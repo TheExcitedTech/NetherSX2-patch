@@ -3,17 +3,23 @@
 patch_name="NetherSX2 Builder v1.8"
 patch_author=""
 md5hash="c98b0e4152d3b02fbfb9f62581abada5"
+md5version=""
 xdelta_name="nethersx2.xdelta"
 patched_end="-noads"
 # ***************************************************************************
 
 # Setting Base Variables
-p2f="$(dirname "$(readlink -f "$0")")" 
+p2f="$(pwd)"
 input_path="$p2f/OriginalAPK"
 output_path="$p2f/PatchedAPK"
 xdelta_patch="$p2f/lib/$xdelta_name"
 
-# Preparing to Start
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    md5version="md5 -r"
+else
+    md5version="md5sum"
+fi
+
 titlen="${#patch_name}"
 autlen="${#patch_author}"
 autlen=$((autlen+3))
@@ -50,7 +56,7 @@ patch() {
         if command -v xdelta3 &> /dev/null; then
             xdelta3 -d -f -s "$i" "$xdelta_patch" "$output_path/$(basename "$i" .apk)$patched_end.apk"
         else
-			chmod $p2f/lib/xdelta3 +x
+			chmod +x $p2f/lib/xdelta3
             $p2f/lib/xdelta3 -d -f -s "$i" "$xdelta_patch" "$output_path/$(basename "$i" .apk)$patched_end.apk"
         fi
     done
@@ -86,7 +92,7 @@ else
 fi
 
 for i in "$input_path"/*.apk; do
-    md5_checksum=$(md5sum "$i" | awk '{print $1}')
+    md5_checksum=$($md5version "$i" | awk '{print $1}')
     if [ "$md5_checksum" = "$md5hash" ]; then
         patch
     else
